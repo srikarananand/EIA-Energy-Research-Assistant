@@ -1,7 +1,7 @@
 """
 EIA Energy Research Assistant — Streamlit Application
 Author: Srikaran Anand (fsrikar@okstate.edu), Oklahoma State University
-Course: Agentic AI Systems — Week 5 Capstone Project (Option 4: Research Assistant)
+Research Assistant
 
 Run:  streamlit run app.py
 """
@@ -120,12 +120,12 @@ if "last_steps" not in st.session_state:
 # Sidebar navigation
 # ──────────────────────────────────────────────────────────────────────────────
 with st.sidebar:
-    st.markdown("## ⚡ EIA Research Assistant")
-    st.markdown("Agentic AI Capstone Project")
+    st.markdown("## EIA Research Assistant")
+    st.markdown("Agentic AI Project")
     st.markdown("---")
     page = st.radio(
         "Navigate",
-        ["🔬 Research Chat", "📊 Dashboard", "🔍 Observability", "🏗 Architecture", "🔧 MCP Tools"],
+        ["Research Chat", "Dashboard", "Observability", "Architecture", "MCP Tools"],
         label_visibility="collapsed",
     )
     st.markdown("---")
@@ -185,8 +185,8 @@ def trace_badge(event_type):
 # ══════════════════════════════════════════════════════════════════════════════
 #  PAGE: Research Chat
 # ══════════════════════════════════════════════════════════════════════════════
-if page == "🔬 Research Chat":
-    st.title("🔬 Energy Research Chat")
+if page == "Research Chat":
+    st.title("Energy Research Chat")
     st.caption("Ask any question about U.S. energy data — powered by EIA API v2 with Agentic RAG")
 
     # Suggested queries
@@ -274,11 +274,11 @@ if page == "🔬 Research Chat":
                         badge = trace_badge(step.get("type", "thought"))
                         st.markdown(f"{badge} **Step {i}**", unsafe_allow_html=True)
                         if step.get("thought"):
-                            st.markdown(f"  💭 {step['thought']}")
+                            st.markdown(f"   {step['thought']}")
                         if step.get("action"):
-                            st.markdown(f"  🔧 {step['action']}")
+                            st.markdown(f"   {step['action']}")
                         if step.get("observation"):
-                            st.markdown(f"  👁 {step['observation']}")
+                            st.markdown(f"   {step['observation']}")
                         st.markdown("---")
 
         # Store assistant message WITH chart data and eval so they persist across reruns
@@ -294,8 +294,8 @@ if page == "🔬 Research Chat":
 # ══════════════════════════════════════════════════════════════════════════════
 #  PAGE: Dashboard
 # ══════════════════════════════════════════════════════════════════════════════
-elif page == "📊 Dashboard":
-    st.title("📊 Telemetry Dashboard")
+elif page == "Dashboard":
+    st.title("Telemetry Dashboard")
     st.caption("Real-time metrics from the agentic pipeline")
 
     # KPI cards
@@ -369,14 +369,14 @@ elif page == "📊 Dashboard":
                 if formatted.get("chart_data"):
                     render_chart(formatted["chart_data"], formatted.get("chart_type", "line"))
             else:
-                st.warning("No records returned. The EIA API may be temporarily rate-limited with DEMO_KEY.")
+                st.warning("No records returned. The EIA API may be temporarily rate-limited.")
 
 
 # ══════════════════════════════════════════════════════════════════════════════
 #  PAGE: Observability
 # ══════════════════════════════════════════════════════════════════════════════
-elif page == "🔍 Observability":
-    st.title("🔍 Agent Observability")
+elif page == "Observability":
+    st.title("Agent Observability")
     st.caption("Full trace stream of the agentic ReAct pipeline")
 
     # Filters
@@ -411,8 +411,8 @@ elif page == "🔍 Observability":
 # ══════════════════════════════════════════════════════════════════════════════
 #  PAGE: Architecture
 # ══════════════════════════════════════════════════════════════════════════════
-elif page == "🏗 Architecture":
-    st.title("🏗 System Architecture")
+elif page == "Architecture":
+    st.title("System Architecture")
     st.caption("EIA Energy Research Assistant — Agentic AI Pipeline")
 
     # Architecture flow
@@ -492,14 +492,14 @@ elif page == "🏗 Architecture":
 # ══════════════════════════════════════════════════════════════════════════════
 #  PAGE: MCP Tools
 # ══════════════════════════════════════════════════════════════════════════════
-elif page == "🔧 MCP Tools":
-    st.title("🔧 MCP Tools (Model Context Protocol)")
+elif page == "MCP Tools":
+    st.title("MCP Tools (Model Context Protocol)")
     st.caption("Standardized tool interface for EIA API interactions")
 
     # List MCP tools
     st.subheader("Available Tools")
     for tool in eia_api.MCP_TOOLS:
-        with st.expander(f"🔧 {tool['name']}", expanded=False):
+        with st.expander(f" {tool['name']}", expanded=False):
             st.markdown(f"**Description:** {tool['description']}")
             st.markdown("**Parameters:**")
             st.json(tool["parameters"])
@@ -559,9 +559,9 @@ elif page == "🔧 MCP Tools":
     if st.button("Test Guardrails"):
         result = agent.apply_guardrails(test_input)
         if result["passed"]:
-            st.success(f"✅ PASSED — {result['reason']}")
+            st.success(f" PASSED — {result['reason']}")
         else:
-            st.error(f"❌ BLOCKED — {result['reason']}")
+            st.error(f" BLOCKED — {result['reason']}")
 
     # Eval test
     st.subheader("Test LLM-as-Judge Evaluation")
