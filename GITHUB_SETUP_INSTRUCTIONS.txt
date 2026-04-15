@@ -1,0 +1,167 @@
+================================================================================
+  EIA ENERGY RESEARCH ASSISTANT — GitHub Repository Setup Instructions
+  Srikaran Anand | fsrikar@okstate.edu | Oklahoma State University
+================================================================================
+
+STEP 1: CREATE A NEW GITHUB REPOSITORY
+---------------------------------------
+1. Go to https://github.com/new
+2. Repository name: eia-energy-research-assistant (or your preferred name)
+3. Description: "Agentic AI Research Assistant using EIA API v2 — Streamlit Capstone Project"
+4. Set visibility to Public (so your professor can access it)
+5. Do NOT initialize with README (we already have one)
+6. Click "Create repository"
+
+
+STEP 2: INITIALIZE LOCAL GIT REPOSITORY
+-----------------------------------------
+Open a terminal in the project folder (eia-streamlit/) and run:
+
+    cd eia-streamlit
+    git init
+    git config user.name "Srikaran Anand"
+    git config user.email "fsrikar@okstate.edu"
+
+
+STEP 3: ADD AND COMMIT ALL FILES
+----------------------------------
+    git add .
+    git commit -m "Initial commit: EIA Energy Research Assistant - Agentic AI Capstone"
+
+
+STEP 4: CONNECT TO GITHUB AND PUSH
+------------------------------------
+Replace <your-username> with your GitHub username:
+
+    git remote add origin https://github.com/<your-username>/eia-energy-research-assistant.git
+    git branch -M main
+    git push -u origin main
+
+
+STEP 5: VERIFY ON GITHUB
+--------------------------
+Visit your repository URL. You should see:
+    - README.md rendered on the main page
+    - All source files (app.py, agent.py, eia_api.py, storage.py, models.py)
+    - ARCHITECTURE.md with Mermaid diagrams (GitHub renders these natively)
+    - requirements.txt
+    - .gitignore
+
+
+================================================================================
+  HOW TO RUN THE APPLICATION
+================================================================================
+
+OPTION A: RUN LOCALLY
+---------------------
+1. Install Python 3.10+ if not already installed
+
+2. (Optional) Create a virtual environment:
+       python -m venv venv
+       source venv/bin/activate        # macOS/Linux
+       venv\Scripts\activate           # Windows
+
+3. Install dependencies:
+       pip install -r requirements.txt
+
+4. Run the application:
+       streamlit run app.py
+
+5. Open the URL shown in terminal (usually http://localhost:8501)
+
+
+OPTION B: RUN ON GOOGLE COLAB (RECOMMENDED FOR DEMO)
+------------------------------------------------------
+1. Go to https://colab.research.google.com
+2. Upload the file: EIA_Research_Assistant_Colab.ipynb
+3. Upload the zip file: eia-streamlit.zip (to the Colab file browser)
+4. Run all cells in order
+5. A public URL will appear — click it to open the app
+6. If localtunnel asks for a password, enter the IP shown in the output
+
+Note: The Colab notebook includes all steps: install, unzip, test, launch.
+
+
+OPTION C: DEPLOY ON STREAMLIT CLOUD (PERMANENT URL)
+----------------------------------------------------
+1. Push your code to GitHub (Steps 1-4 above)
+2. Go to https://share.streamlit.io
+3. Sign in with your GitHub account
+4. Click "New app"
+5. Select your repository: eia-energy-research-assistant
+6. Branch: main
+7. Main file path: app.py
+8. Click "Deploy"
+9. Your app will be live at: https://your-app-name.streamlit.app
+
+
+================================================================================
+  PROJECT FILES OVERVIEW
+================================================================================
+
+eia-streamlit/
+├── app.py              # Streamlit application (5 pages)
+├── agent.py            # Agentic AI engine (guardrails, RAG, eval, ReAct)
+├── eia_api.py          # EIA API v2 integration (caching, retry, rate limiting)
+├── storage.py          # SQLite database layer
+├── models.py           # Data model definitions
+├── requirements.txt    # Python dependencies
+├── .gitignore          # Git ignore rules
+├── README.md           # Full project documentation
+├── ARCHITECTURE.md     # Mermaid architecture diagrams
+├── EIA_Research_Assistant_Colab.ipynb  # Google Colab notebook
+└── EIA_Research_Assistant_Presentation.pptx  # Presentation slides
+
+
+================================================================================
+  SUBMISSION CHECKLIST
+================================================================================
+
+Before submitting, verify:
+
+  [  ] GitHub repository is public and accessible
+  [  ] README.md is rendered properly on GitHub
+  [  ] ARCHITECTURE.md Mermaid diagrams render on GitHub
+  [  ] Application runs (locally or on Colab/Streamlit Cloud)
+  [  ] All 5 pages work: Research Chat, Dashboard, Observability, Architecture, MCP Tools
+  [  ] Chat responds to energy queries with data and charts
+  [  ] Presentation PPTX is included or submitted separately
+
+Deliverables:
+  1. Codebase        -> GitHub repository URL
+  2. Architecture    -> ARCHITECTURE.md + Architecture page in app
+  3. Use Cases       -> README.md + Architecture page in app
+  4. Deployment      -> Colab or Streamlit Cloud URL + Dashboard/Observability
+  5. Presentation    -> EIA_Research_Assistant_Presentation.pptx
+
+
+================================================================================
+  LINKEDIN POST TEMPLATE (BONUS)
+================================================================================
+
+Suggested post (edit as you wish):
+
+---
+Excited to share my Week 5 Capstone Project for Agentic AI Systems!
+
+I built an EIA Energy Research Assistant — an autonomous AI agent that
+queries the U.S. Energy Information Administration API to answer energy
+questions with verified data and auto-generated charts.
+
+Key insights:
+1. Agentic RAG grounds responses in domain knowledge, improving accuracy
+2. Layered safety (guardrails + LLM-as-Judge eval + observability)
+   matters more than better prompts alone
+3. Caching cuts API latency by 90%+ for repeated queries
+
+Built with Python, Streamlit, and the ReAct pattern.
+
+GitHub: [your-repo-url]
+Demo: [your-streamlit-cloud-url]
+
+#AgenticAI #LLM #EnergyData #MachineLearning #OklahomaState
+---
+
+Tag your professor as mentioned in the assignment instructions.
+
+================================================================================
