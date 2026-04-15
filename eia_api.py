@@ -1,7 +1,7 @@
 """
 EIA API v2 Integration with caching, retry, and rate limiting
 Author: Srikaran Anand (fsrikar@okstate.edu), Oklahoma State University
-Course: Agentic AI Systems - Capstone Project (Option 4: Research Assistant)
+Research Assistant
 
 Features:
 - Rate limiting: 200ms minimum between requests
