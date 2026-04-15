@@ -22,7 +22,6 @@ import eia_api
 # ──────────────────────────────────────────────────────────────────────────────
 st.set_page_config(
     page_title="EIA Energy Research Assistant",
-    page_icon="⚡",
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -30,6 +29,17 @@ st.set_page_config(
 # ──────────────────────────────────────────────────────────────────────────────
 # Custom CSS
 # ──────────────────────────────────────────────────────────────────────────────
+st.markdown(
+    """
+    <style>
+        :root {
+            color-scheme: light !important;
+        }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
 st.markdown("""
 <style>
     /* Teal energy theme */
