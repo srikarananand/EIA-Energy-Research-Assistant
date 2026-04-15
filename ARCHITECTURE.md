@@ -20,10 +20,11 @@ graph TD
     F -->|get_preset_data| G
     G --> H{Cache Check}
     H -->|HIT| I[Return Cached Data]
-    H -->|MISS| J[HTTP Request]
+    H -->|MISS| RL[Rate Limit 200ms]
+    RL --> J[HTTP Request]
     J --> K{Response OK?}
     K -->|429/5xx| L[Retry with Backoff]
-    L --> J
+    L --> RL
     K -->|200| M[Store in Cache]
     M --> I
     I --> N[Format Data + Charts]
@@ -37,6 +38,7 @@ graph TD
     style D fill:#DDD6FE,color:#6D28D9
     style E fill:#A7F3D0,color:#065F46
     style G fill:#99F6E4,color:#0F766E
+    style RL fill:#E0E7FF,color:#3730A3
     style P fill:#FED7AA,color:#9A3412
     style Q fill:#F1F5F9,color:#475569
 ```
@@ -48,78 +50,79 @@ graph TD
 ```mermaid
 sequenceDiagram
     participant U as User
-    participant F as Flask API
-    participant G as Guardrails
+    participant F as Streamlit App
     participant A as ReAct Agent
+    participant G as Guardrails
     participant R as RAG Store
     participant M as MCP Tools
     participant E as EIA API v2
     participant C as SQLite Cache
     participant L as Logger
 
-    U->>F: POST /api/chat { message }
-    F->>G: apply_guardrails(input)
-    G-->>F: { passed, sanitized_input }
-    
-    alt Guardrail Failed
-        F-->>U: 400 { blocked reason }
-    end
-    
+    U->>F: st.chat_input(query)
     F->>A: run_agent(query, conv_id)
-    
+
+    Note over A: THINK: Guardrails
+    A->>G: apply_guardrails(query)
+    G-->>A: { passed, sanitized_input }
+
+    alt Guardrail Failed
+        A-->>F: { answer: blocked_reason }
+        F-->>U: display blocked message
+    end
+
     Note over A: THINK: Detect Intent
     A->>A: detect_intent(query)
     A->>L: log(intent_detection, {intent, entities})
-    
+
     Note over A: ACT: RAG Retrieval
     A->>R: search_rag_chunks(query, top_k=5)
     R-->>A: [relevant_chunks]
     A->>L: log(rag_retrieve, {chunks_count})
-    
+
     Note over A: THINK: Select MCP Tool
     A->>A: select_preset(data_type, intent)
     A->>L: log(tool_selection, {tool, preset})
-    
+
     Note over A: ACT: Execute MCP Tool
     A->>M: execute_mcp_tool(tool, args)
     M->>C: get_cache_entry(cache_key)
-    
+
     alt Cache Hit
         C-->>M: cached_response
         M->>L: log(cache_hit)
     else Cache Miss
         M->>M: enforce_rate_limit (200ms)
         M->>E: GET /v2/{route}/data?api_key=...
-        
+
         alt API Error (429/5xx)
             E-->>M: error
             M->>M: retry with backoff (1s, 2s, 4s)
             M->>E: retry request
         end
-        
+
         E-->>M: { response: { data: [...] } }
         M->>C: set_cache_entry(key, data, ttl=3600)
         M->>L: log(api_call, {status, records})
     end
-    
+
     M-->>A: api_data
-    
+
     Note over A: OBSERVE: Format Data
     A->>A: format_data_for_response(data, route)
-    
+
     Note over A: THINK: Synthesize Response
     A->>A: synthesize_response(query, intent, context, data)
     A->>L: log(synthesis, {response_length})
-    
-    Note over A: EVAL: LLM-as-Judge
+
+    Note over A: EVAL: Rule-based LLM-as-Judge
     A->>A: evaluate_response(query, answer, data)
-    A->>L: log(eval, {score, dimensions})
-    
     A->>L: log(agent_complete, {steps, eval_score})
-    A-->>F: { answer, steps, evaluation, chart_data }
-    
-    F->>F: store_message(user + assistant)
-    F-->>U: { answer, steps, evaluation, chart_data, chart_type }
+
+    A-->>F: { answer, steps, evaluation, chart_data, chart_type }
+
+    F->>F: storage.create_message(user + assistant)
+    F-->>U: st.markdown(answer) + render_chart() + eval badges
 ```
 
 ---
@@ -128,12 +131,11 @@ sequenceDiagram
 
 | Component | File | Responsibility | Key Features |
 |-----------|------|----------------|-------------|
-| Flask Backend | `app.py` | HTTP API layer | 18+ endpoints, CORS, error handling, startup init |
-| ReAct Agent | `agent.py` | Agentic reasoning loop | Guardrails, intent detection, RAG, MCP selection, synthesis, eval |
-| EIA API Client | `eia_api.py` | External data access | 7 presets, MCP tools, 1hr cache, 200ms rate limit, 3× retry |
-| Storage Layer | `storage.py` | Persistence | SQLite: 5 tables, TTL cache, keyword RAG search, log aggregation |
-| Data Models | `models.py` | Type definitions | Dataclasses: Conversation, Message, EiaCache, AgentLog, RagChunk |
-| SPA Frontend | `static/` | User interface | 4 tabs, Chart.js charts, marked.js markdown, eval badges |
+| Streamlit App | `app.py` | UI & app orchestration | 5 pages, Plotly charts, session state, startup init |
+| ReAct Agent | `agent.py` | Agentic reasoning loop | 9-step ReAct loop, guardrails (14 injection patterns), 7 intents, 8-chunk RAG, preset selection map, rule-based 3-dim eval |
+| EIA API Client | `eia_api.py` | External data access | 7 presets, 3 MCP tools, 1hr cache, 200ms rate limit, 3× retry (1s/2s/4s backoff) |
+| Storage Layer | `storage.py` | Persistence | SQLite: 5 tables, WAL mode, 4 indexes, TTL cache, keyword RAG search, log aggregation |
+| Data Models | `models.py` | Type definitions | 9 dataclasses: Conversation, Message, EiaCache, AgentLog, RagChunk, AgentResult, GuardrailResult, EvalResult, IntentResult |ges |
 
 ---
 
