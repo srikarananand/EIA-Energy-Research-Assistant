@@ -1,6 +1,6 @@
 # EIA Energy Research Assistant
 
-**Agentic AI Capstone Project — Research Assistant**
+**Agentic AI Project — Research Assistant**
 
 Author: Srikaran Anand (fsrikar@okstate.edu)  
 Oklahoma State University | Agentic AI Systems  
@@ -13,6 +13,8 @@ April 2026
 An autonomous AI research assistant that queries the **U.S. Energy Information Administration (EIA) API v2** to answer energy questions with verified data, auto-generated charts, and full observability.
 
 Built with **Streamlit** for rapid deployment and easy demonstration.
+
+# Access [HERE](https://eia-energy-research-assistant.streamlit.app/)
 
 ## Features
 
@@ -104,7 +106,7 @@ eia-streamlit/
 
 ## EIA API Key
 
-The app uses `DEMO_KEY` by default, which works for all queries with rate limits. To use your own key:
+The app uses an API key that needs registration. To use your own key:
 
 ```bash
 export EIA_API_KEY=your_key_here
@@ -115,4 +117,4 @@ Register for a free key at: https://www.eia.gov/opendata/register.php
 
 ## License
 
-Academic use — Oklahoma State University Capstone Project.
+Academic use — Oklahoma State University.
