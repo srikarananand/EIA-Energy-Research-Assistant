@@ -450,16 +450,28 @@ def format_data_for_response(data: Any, route: str = "") -> Dict[str, Any]:
     value_col = next((k for k in ["value", "price", "sales", "generation", "revenue"] if k in (records[0] if records else {})), None)
 
     if period_col and value_col and records:
-        # Reverse for chronological order
-        chart_records = list(reversed(records[:60]))
-        labels = [str(r.get(period_col, "")) for r in chart_records]
-        values = []
-        for r in chart_records:
+        # Aggregate by period — many datasets return multiple rows per period
+        # (e.g. one row per state/sector). Average the numeric values per period.
+        from collections import defaultdict
+        period_agg: dict = defaultdict(list)
+        for r in records:
+            period = str(r.get(period_col, ""))
             try:
                 v = float(r.get(value_col, 0) or 0)
-                values.append(v)
+                if v != 0:  # skip zero/null entries
+                    period_agg[period].append(v)
             except (ValueError, TypeError):
-                values.append(0)
+                pass
+
+        # Sort periods chronologically and compute averages
+        sorted_periods = sorted(period_agg.keys())
+        labels = sorted_periods
+        values = [round(sum(period_agg[p]) / len(period_agg[p]), 2) if period_agg[p] else 0 for p in sorted_periods]
+
+        # Skip chart if only 1 data point (would just be a dot)
+        if len(labels) < 2:
+            labels = []
+            values = []
 
         # Determine chart type
         if "co2" in route.lower() or "emission" in route.lower():
@@ -469,21 +481,22 @@ def format_data_for_response(data: Any, route: str = "") -> Dict[str, Any]:
         else:
             chart_type = "line"
 
-        chart_data = {
-            "labels": labels,
-            "datasets": [
-                {
-                    "label": value_col.replace("_", " ").title(),
-                    "data": values,
-                    "borderColor": "#0F766E",
-                    "backgroundColor": "rgba(15, 118, 110, 0.1)",
-                    "tension": 0.4,
-                    "fill": True,
-                }
-            ],
-            "route": route,
-            "record_count": len(records),
-        }
+        if labels and values:
+            chart_data = {
+                "labels": labels,
+                "datasets": [
+                    {
+                        "label": value_col.replace("_", " ").title(),
+                        "data": values,
+                        "borderColor": "#0F766E",
+                        "backgroundColor": "rgba(15, 118, 110, 0.1)",
+                        "tension": 0.4,
+                        "fill": True,
+                    }
+                ],
+                "route": route,
+                "record_count": len(records),
+            }
 
     return {"summary": summary, "chart_data": chart_data, "chart_type": chart_type}
 
@@ -617,8 +630,7 @@ def synthesize_response(
     context_text = ""
     if context:
         context_text = "\n\n".join([
-            f"**{c['source']}:** {c['content'][:400]}..." 
-            if len(c['content']) > 400 else f"**{c['source']}:** {c['content']}"
+            f"**{c['source']}:** {c['content']}"
             for c in context[:3]
         ])
 
@@ -649,12 +661,11 @@ def synthesize_response(
         if "label" in data:
             response_parts.append(f"\n\n**Dataset:** {data.get('label', '')} — {data.get('description', '')}")
 
-    # Add contextual knowledge from RAG
+    # Add contextual knowledge from RAG (use full content, no truncation)
     if context:
         response_parts.append("\n\n### Energy Context\n")
         for c in context[:2]:
-            content_preview = c["content"][:600] + "..." if len(c["content"]) > 600 else c["content"]
-            response_parts.append(f"\n**{c['source']}:** {content_preview}\n")
+            response_parts.append(f"\n**{c['source']}:** {c['content']}\n")
 
     # Add intent-specific insights
     if intent_str == "trend":

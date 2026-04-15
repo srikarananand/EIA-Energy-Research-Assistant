@@ -206,10 +206,23 @@ if page == "🔬 Research Chat":
 
     st.markdown("---")
 
-    # Chat history
+    # Chat history (re-render messages with charts and eval badges)
     for msg in st.session_state.messages:
         with st.chat_message(msg["role"]):
             st.markdown(msg["content"])
+            # Re-render chart if this message had one
+            if msg.get("chart_data"):
+                render_chart(msg["chart_data"], msg.get("chart_type", "line"))
+            # Re-render eval badges
+            if msg.get("evaluation") and msg["evaluation"].get("score", 0) > 0:
+                ev = msg["evaluation"]
+                pills = (
+                    eval_pill("Accuracy", ev.get("factual_accuracy", 0))
+                    + eval_pill("Relevance", ev.get("relevance", 0))
+                    + eval_pill("Completeness", ev.get("completeness", 0))
+                    + f' &nbsp; <strong>Overall: {ev.get("score", 0)}/5</strong>'
+                )
+                st.markdown(pills, unsafe_allow_html=True)
 
     # Handle pending suggestion click
     pending = st.session_state.pop("pending_query", None)
@@ -239,13 +252,11 @@ if page == "🔬 Research Chat":
 
             # Chart
             if result.get("chart_data"):
-                st.session_state.last_chart = (result["chart_data"], result.get("chart_type", "line"))
                 render_chart(result["chart_data"], result.get("chart_type", "line"))
 
             # Evaluation badges
             ev = result.get("evaluation", {})
             if ev and ev.get("score", 0) > 0:
-                st.session_state.last_eval = ev
                 pills = (
                     eval_pill("Accuracy", ev.get("factual_accuracy", 0))
                     + eval_pill("Relevance", ev.get("relevance", 0))
@@ -257,7 +268,6 @@ if page == "🔬 Research Chat":
 
             # Agent trace expander
             steps = result.get("steps", [])
-            st.session_state.last_steps = steps
             if steps:
                 with st.expander(f"Agent Trace ({len(steps)} steps)", expanded=False):
                     for i, step in enumerate(steps, 1):
@@ -271,7 +281,14 @@ if page == "🔬 Research Chat":
                             st.markdown(f"  👁 {step['observation']}")
                         st.markdown("---")
 
-        st.session_state.messages.append({"role": "assistant", "content": result["answer"]})
+        # Store assistant message WITH chart data and eval so they persist across reruns
+        st.session_state.messages.append({
+            "role": "assistant",
+            "content": result["answer"],
+            "chart_data": result.get("chart_data"),
+            "chart_type": result.get("chart_type", "line"),
+            "evaluation": result.get("evaluation"),
+        })
 
 
 # ══════════════════════════════════════════════════════════════════════════════
