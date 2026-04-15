@@ -24,7 +24,15 @@ import storage
 logger = logging.getLogger(__name__)
 
 EIA_BASE_URL = "https://api.eia.gov/v2"
-EIA_API_KEY = os.environ.get("EIA_API_KEY", "DEMO_KEY")
+def _get_api_key() -> str:
+    """Get the EIA API key. Checks st.secrets first (Streamlit Cloud), then env var."""
+    try:
+        import streamlit as st
+        if "EIA_API_KEY" in st.secrets:
+            return st.secrets["EIA_API_KEY"]
+    except Exception:
+        pass
+    return os.environ.get("EIA_API_KEY", "DEMO_KEY")
 CACHE_TTL = 3600          # 1 hour in seconds
 RATE_LIMIT_MS = 200       # 200ms minimum between requests
 RETRY_DELAYS = [1, 2, 4]  # Exponential backoff in seconds
@@ -344,19 +352,12 @@ def query_eia(params: Dict[str, Any], conversation_id: Optional[str] = None) -> 
     route = params.pop("route", "")
     url = f"{EIA_BASE_URL}/{route.lstrip('/')}/data"
     
-    query_params: Dict[str, Any] = {"api_key": EIA_API_KEY}
+    query_params: Dict[str, Any] = {"api_key": _get_api_key()}
     
-    # Handle data[], facets[], sort[] — expand lists properly
+    # Pass params through directly — preset params already have the right key format
+    # (e.g. "data[]": ["value"], "facets[product][]": ["EPM0F"])
     for key, val in params.items():
-        if isinstance(val, list):
-            for item in val:
-                query_params.setdefault(f"{key}[]", [])
-                if isinstance(query_params[f"{key}[]"], list):
-                    query_params[f"{key}[]"].append(item)
-                else:
-                    query_params[f"{key}[]"] = [query_params[f"{key}[]"], item]
-        else:
-            query_params[key] = val
+        query_params[key] = val
 
     return _make_request(url, query_params, conversation_id)
 
@@ -366,7 +367,7 @@ def explore_eia_route(route: str = "", conversation_id: Optional[str] = None) ->
     Explore EIA API v2 route metadata to discover available datasets.
     """
     url = f"{EIA_BASE_URL}/{route.lstrip('/')}" if route else EIA_BASE_URL
-    params = {"api_key": EIA_API_KEY}
+    params = {"api_key": _get_api_key()}
     return _make_request(url, params, conversation_id)
 
 
@@ -404,12 +405,12 @@ def execute_mcp_tool(tool_name: str, arguments: Dict[str, Any], conversation_id:
             route = arguments.get("route", "")
             params: Dict[str, Any] = {"route": route}
             if "data" in arguments:
-                params["data"] = arguments["data"]
+                params["data[]"] = arguments["data"]
             if "frequency" in arguments:
                 params["frequency"] = arguments["frequency"]
             if "facets" in arguments:
                 for k, v in arguments["facets"].items():
-                    params[f"facets[{k}]"] = v if isinstance(v, list) else [v]
+                    params[f"facets[{k}][]"] = v if isinstance(v, list) else [v]
             if "length" in arguments:
                 params["length"] = arguments["length"]
             if "start" in arguments:
