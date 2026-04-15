@@ -1,9 +1,9 @@
-# ⚡ EIA Energy Research Assistant
+# EIA Energy Research Assistant
 
-**Agentic AI Capstone Project — Option 4: Research Assistant**
+**Agentic AI Capstone Project — Research Assistant**
 
 Author: Srikaran Anand (fsrikar@okstate.edu)  
-Oklahoma State University | Agentic AI Systems — Week 5 Capstone  
+Oklahoma State University | Agentic AI Systems  
 April 2026
 
 ---
@@ -39,8 +39,6 @@ User Query → Guardrails → Intent Detection → RAG Retrieval → MCP Tool Se
 7. **THINK:** Synthesize comprehensive response
 8. **EVAL:** LLM-as-Judge 3-dimension scoring (factual accuracy, relevance, completeness)
 
-## Capstone Requirements
-
 | Phase | Requirement | Implementation |
 |-------|------------|----------------|
 | 1 | Architecture & Use Cases | ReAct agentic pattern, 6 documented use cases |
@@ -63,11 +61,6 @@ pip install streamlit requests pandas plotly
 streamlit run app.py
 ```
 
-### Google Colab
-1. Upload `eia-streamlit.zip` to Colab
-2. Open `EIA_Research_Assistant_Colab.ipynb`
-3. Run all cells — a public URL will be generated
-
 ## Tech Stack
 
 | Layer | Technologies |
@@ -89,8 +82,7 @@ eia-streamlit/
 ├── requirements.txt    # Python dependencies
 ├── .gitignore          # Git ignore rules
 ├── README.md           # This file
-├── ARCHITECTURE.md     # Mermaid architecture diagrams
-└── EIA_Research_Assistant_Colab.ipynb  # Google Colab notebook
+└── ARCHITECTURE.md     # Mermaid architecture diagrams
 ```
 
 ## MCP Tools
