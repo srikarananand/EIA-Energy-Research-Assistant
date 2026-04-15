@@ -1,7 +1,7 @@
 """
 Data models for EIA Energy Research Assistant
 Author: Srikaran Anand (fsrikar@okstate.edu), Oklahoma State University
-Course: Agentic AI Systems - Capstone Project (Option 4: Research Assistant)
+Research Assistant
 """
 
 from dataclasses import dataclass, field
