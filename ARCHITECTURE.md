@@ -1,6 +1,6 @@
 # Architecture — EIA Energy Research Assistant
 
-**Agentic AI Systems — Capstone Project (Option 4: Research Assistant)**  
+**Agentic AI Systems — Research Assistant**  
 **Author:** Srikaran Anand (fsrikar@okstate.edu) · Oklahoma State University
 
 ---
