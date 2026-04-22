@@ -1,7 +1,7 @@
 """
 EIA Energy Research Assistant — Streamlit Application
 Author: Srikaran Anand (fsrikar@okstate.edu), Oklahoma State University
-Research Assistant
+Course: Agentic AI Systems — Week 5 Capstone Project (Option 4: Research Assistant)
 
 Run:  streamlit run app.py
 """
@@ -22,6 +22,7 @@ import eia_api
 # ──────────────────────────────────────────────────────────────────────────────
 st.set_page_config(
     page_title="EIA Energy Research Assistant",
+    page_icon="⚡",
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -31,22 +32,30 @@ st.set_page_config(
 # ──────────────────────────────────────────────────────────────────────────────
 st.markdown("""
 <style>
-    /* Teal energy theme */
-    .stApp { background-color: #f7fffe; }
+    /* ──────────────── Dark mode — Teal energy theme ──────────────── */
+    .stApp { background-color: #0f1617; color: #e8edec; }
     .block-container { max-width: 1200px; }
-    
+
+    /* Base text colors */
+    .stApp, .stApp p, .stApp li, .stApp span, .stApp label,
+    .stApp h1, .stApp h2, .stApp h3, .stApp h4, .stApp h5, .stApp h6,
+    .stApp div[data-testid="stMarkdownContainer"] {
+        color: #e8edec;
+    }
+    .stApp a { color: #5eead4; }
+
     /* KPI cards */
     .kpi-card {
-        background: white;
+        background: #1a2626;
         border-radius: 12px;
         padding: 20px;
         text-align: center;
-        border: 1px solid #e0f2f1;
-        box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+        border: 1px solid #2a3e3e;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.3);
     }
-    .kpi-value { font-size: 2rem; font-weight: 700; color: #0f766e; }
-    .kpi-label { font-size: 0.85rem; color: #666; margin-top: 4px; }
-    
+    .kpi-value { font-size: 2rem; font-weight: 700; color: #5eead4; }
+    .kpi-label { font-size: 0.85rem; color: #9ca3af; margin-top: 4px; }
+
     /* Trace log badges */
     .trace-badge {
         display: inline-block;
@@ -65,7 +74,7 @@ st.markdown("""
     .badge-synthesis { background: #0891b2; }
     .badge-eval { background: #dc2626; }
     .badge-error { background: #ef4444; }
-    
+
     /* Eval score pills */
     .eval-pill {
         display: inline-block;
@@ -75,17 +84,64 @@ st.markdown("""
         font-weight: 600;
         margin-right: 8px;
     }
-    .eval-high { background: #d1fae5; color: #065f46; }
-    .eval-mid { background: #fef3c7; color: #92400e; }
-    .eval-low { background: #fee2e2; color: #991b1b; }
-    
+    .eval-high { background: #065f46; color: #d1fae5; }
+    .eval-mid { background: #92400e; color: #fef3c7; }
+    .eval-low { background: #991b1b; color: #fee2e2; }
+
     /* Sidebar nav */
-    [data-testid="stSidebar"] { background-color: #0d4f4f; }
+    [data-testid="stSidebar"] { background-color: #0a3a3a; }
     [data-testid="stSidebar"] * { color: white !important; }
     [data-testid="stSidebar"] .stRadio label { color: white !important; }
-    
-    /* Chat input fix */
+
+    /* Chat messages */
+    [data-testid="stChatMessage"] { background-color: #1a2626; border: 1px solid #2a3e3e; }
+    [data-testid="stChatMessage"] * { color: #e8edec; }
+
+    /* Chat input */
     .stChatInput { border-color: #0f766e !important; }
+    .stChatInput textarea { background-color: #1a2626 !important; color: #e8edec !important; }
+
+    /* Inputs, text areas, select boxes */
+    .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"] > div,
+    .stNumberInput input, .stDateInput input {
+        background-color: #1a2626 !important;
+        color: #e8edec !important;
+        border-color: #2a3e3e !important;
+    }
+
+    /* Buttons */
+    .stButton > button {
+        background-color: #0f766e;
+        color: white;
+        border: none;
+    }
+    .stButton > button:hover { background-color: #14b8a6; color: white; }
+
+    /* Tabs */
+    .stTabs [data-baseweb="tab-list"] { background-color: #0f1617; }
+    .stTabs [data-baseweb="tab"] { color: #9ca3af; }
+    .stTabs [aria-selected="true"] { color: #5eead4 !important; }
+
+    /* Expander */
+    .streamlit-expanderHeader { background-color: #1a2626 !important; color: #e8edec !important; }
+    details { background-color: #1a2626 !important; border: 1px solid #2a3e3e !important; }
+
+    /* Dataframes */
+    .stDataFrame { background-color: #1a2626; }
+
+    /* Code blocks */
+    .stApp code { background-color: #1a2626 !important; color: #5eead4 !important; }
+    .stApp pre { background-color: #1a2626 !important; border: 1px solid #2a3e3e; }
+    .stApp pre code { color: #e8edec !important; }
+
+    /* Metric widgets */
+    [data-testid="stMetricValue"] { color: #5eead4 !important; }
+    [data-testid="stMetricLabel"] { color: #9ca3af !important; }
+    [data-testid="stMetricDelta"] { color: #e8edec !important; }
+
+    /* Info/warning/error/success boxes */
+    .stAlert { background-color: #1a2626 !important; }
+    .stAlert * { color: #e8edec !important; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -119,12 +175,12 @@ if "last_steps" not in st.session_state:
 # Sidebar navigation
 # ──────────────────────────────────────────────────────────────────────────────
 with st.sidebar:
-    st.markdown("## EIA Research Assistant")
-    st.markdown("Agentic AI Project")
+    st.markdown("## ⚡ EIA Research Assistant")
+    st.markdown("Agentic AI Capstone Project")
     st.markdown("---")
     page = st.radio(
         "Navigate",
-        ["Research Chat", "Dashboard", "Observability", "Architecture", "MCP Tools"],
+        ["🔬 Research Chat", "📊 Dashboard", "🔍 Observability", "🏗 Architecture", "🔧 MCP Tools"],
         label_visibility="collapsed",
     )
     st.markdown("---")
@@ -162,7 +218,10 @@ def render_chart(chart_data, chart_type="line"):
         fig.update_traces(fill="tozeroy", fillcolor="rgba(15,118,110,0.08)")
     
     fig.update_layout(
-        template="plotly_white",
+        template="plotly_dark",
+        paper_bgcolor="#1a2626",
+        plot_bgcolor="#1a2626",
+        font=dict(color="#e8edec"),
         height=400,
         margin=dict(l=20, r=20, t=30, b=40),
         legend=dict(orientation="h", y=1.08),
@@ -184,8 +243,8 @@ def trace_badge(event_type):
 # ══════════════════════════════════════════════════════════════════════════════
 #  PAGE: Research Chat
 # ══════════════════════════════════════════════════════════════════════════════
-if page == "Research Chat":
-    st.title("Energy Research Chat")
+if page == "🔬 Research Chat":
+    st.title("🔬 Energy Research Chat")
     st.caption("Ask any question about U.S. energy data — powered by EIA API v2 with Agentic RAG")
 
     # Suggested queries
@@ -273,11 +332,11 @@ if page == "Research Chat":
                         badge = trace_badge(step.get("type", "thought"))
                         st.markdown(f"{badge} **Step {i}**", unsafe_allow_html=True)
                         if step.get("thought"):
-                            st.markdown(f"   {step['thought']}")
+                            st.markdown(f"  💭 {step['thought']}")
                         if step.get("action"):
-                            st.markdown(f"   {step['action']}")
+                            st.markdown(f"  🔧 {step['action']}")
                         if step.get("observation"):
-                            st.markdown(f"   {step['observation']}")
+                            st.markdown(f"  👁 {step['observation']}")
                         st.markdown("---")
 
         # Store assistant message WITH chart data and eval so they persist across reruns
@@ -293,8 +352,8 @@ if page == "Research Chat":
 # ══════════════════════════════════════════════════════════════════════════════
 #  PAGE: Dashboard
 # ══════════════════════════════════════════════════════════════════════════════
-elif page == "Dashboard":
-    st.title("Telemetry Dashboard")
+elif page == "📊 Dashboard":
+    st.title("📊 Telemetry Dashboard")
     st.caption("Real-time metrics from the agentic pipeline")
 
     # KPI cards
@@ -332,14 +391,14 @@ elif page == "Dashboard":
             df_evt = pd.DataFrame(list(evt_counts.items()), columns=["Event Type", "Count"])
             fig = px.bar(df_evt, x="Event Type", y="Count",
                          color_discrete_sequence=["#0f766e"])
-            fig.update_layout(template="plotly_white", height=350, margin=dict(l=20, r=20, t=20, b=40))
+            fig.update_layout(template="plotly_dark", paper_bgcolor="#1a2626", plot_bgcolor="#1a2626", font=dict(color="#e8edec"), height=350, margin=dict(l=20, r=20, t=20, b=40))
             st.plotly_chart(fig, use_container_width=True)
 
         with col2:
             st.subheader("Event Distribution")
             fig2 = px.pie(df_evt, names="Event Type", values="Count",
                           color_discrete_sequence=px.colors.sequential.Teal)
-            fig2.update_layout(template="plotly_white", height=350, margin=dict(l=20, r=20, t=20, b=40))
+            fig2.update_layout(template="plotly_dark", paper_bgcolor="#1a2626", plot_bgcolor="#1a2626", font=dict(color="#e8edec"), height=350, margin=dict(l=20, r=20, t=20, b=40))
             st.plotly_chart(fig2, use_container_width=True)
     else:
         st.info("No telemetry data yet. Ask a question in the Research Chat to generate events.")
@@ -368,14 +427,14 @@ elif page == "Dashboard":
                 if formatted.get("chart_data"):
                     render_chart(formatted["chart_data"], formatted.get("chart_type", "line"))
             else:
-                st.warning("No records returned. The EIA API may be temporarily rate-limited.")
+                st.warning("No records returned. The EIA API may be temporarily rate-limited with DEMO_KEY.")
 
 
 # ══════════════════════════════════════════════════════════════════════════════
 #  PAGE: Observability
 # ══════════════════════════════════════════════════════════════════════════════
-elif page == "Observability":
-    st.title("Agent Observability")
+elif page == "🔍 Observability":
+    st.title("🔍 Agent Observability")
     st.caption("Full trace stream of the agentic ReAct pipeline")
 
     # Filters
@@ -410,8 +469,8 @@ elif page == "Observability":
 # ══════════════════════════════════════════════════════════════════════════════
 #  PAGE: Architecture
 # ══════════════════════════════════════════════════════════════════════════════
-elif page == "Architecture":
-    st.title("System Architecture")
+elif page == "🏗 Architecture":
+    st.title("🏗 System Architecture")
     st.caption("EIA Energy Research Assistant — Agentic AI Pipeline")
 
     # Architecture flow
@@ -460,8 +519,8 @@ elif page == "Architecture":
     ]
     for i, (title, desc) in enumerate(use_cases):
         with [uc_col1, uc_col2, uc_col3][i % 3]:
-            st.markdown(f"""<div style="background:white; border:1px solid #e0f2f1; border-radius:10px; padding:16px; margin-bottom:12px; border-top:3px solid #0f766e;">
-                <strong>{title}</strong><br><small style="color:#666">{desc}</small>
+            st.markdown(f"""<div style="background:#1a2626; border:1px solid #2a3e3e; border-radius:10px; padding:16px; margin-bottom:12px; border-top:3px solid #14b8a6; color:#e8edec;">
+                <strong>{title}</strong><br><small style="color:#9ca3af">{desc}</small>
             </div>""", unsafe_allow_html=True)
 
     st.markdown("---")
@@ -491,14 +550,14 @@ elif page == "Architecture":
 # ══════════════════════════════════════════════════════════════════════════════
 #  PAGE: MCP Tools
 # ══════════════════════════════════════════════════════════════════════════════
-elif page == "MCP Tools":
-    st.title("MCP Tools (Model Context Protocol)")
+elif page == "🔧 MCP Tools":
+    st.title("🔧 MCP Tools (Model Context Protocol)")
     st.caption("Standardized tool interface for EIA API interactions")
 
     # List MCP tools
     st.subheader("Available Tools")
     for tool in eia_api.MCP_TOOLS:
-        with st.expander(f" {tool['name']}", expanded=False):
+        with st.expander(f"🔧 {tool['name']}", expanded=False):
             st.markdown(f"**Description:** {tool['description']}")
             st.markdown("**Parameters:**")
             st.json(tool["parameters"])
@@ -558,9 +617,9 @@ elif page == "MCP Tools":
     if st.button("Test Guardrails"):
         result = agent.apply_guardrails(test_input)
         if result["passed"]:
-            st.success(f" PASSED — {result['reason']}")
+            st.success(f"✅ PASSED — {result['reason']}")
         else:
-            st.error(f" BLOCKED — {result['reason']}")
+            st.error(f"❌ BLOCKED — {result['reason']}")
 
     # Eval test
     st.subheader("Test LLM-as-Judge Evaluation")
